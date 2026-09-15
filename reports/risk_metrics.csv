@@ -1,0 +1,12 @@
+metric,value
+latest_inventory_snapshot_date,2025-12-01
+overstock_multiplier,2.0
+forecast_horizon_weeks,6
+n_skus,50
+n_reorder_now,8
+n_markdown_clear,2
+n_watch_volatile,0
+n_healthy,40
+total_sales_at_risk_rs,6524173.26
+total_capital_locked_rs,2111117.52
+total_rupee_impact_rs,8635290.78

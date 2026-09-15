@@ -1,0 +1,3 @@
+Method,WAPE,Bias,Improvement_vs_Baseline_%
+Seasonal-Naive Baseline,0.11800519472267013,0.013618275256757508,0.0
+HistGradientBoosting (global model),0.15198983494440058,0.0831960099426897,-28.799274728201112

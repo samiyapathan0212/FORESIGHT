@@ -1,0 +1,9 @@
+FORESIGHT — SEASONAL-NAIVE BASELINE SUMMARY
+=============================================
+
+Forecast horizon: 6 weeks
+Seasonal lookback: 52 weeks
+Backtest windows: 8
+Overall WAPE: 0.1180
+Overall Bias: +0.0136
+Rows relying on previous-week fallback (no year-ago value yet): 2600

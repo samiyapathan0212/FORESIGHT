@@ -1,0 +1,13 @@
+FORESIGHT — FORECAST MODEL SUMMARY
+========================================
+
+Forecast horizon: 6 weeks
+Backtest windows: 8 (rolling-origin, non-overlapping)
+
+Baseline (seasonal-naive) WAPE: 0.1180, Bias: +0.0136
+Model (HistGradientBoosting)  WAPE: 0.1520, Bias: +0.0832
+Improvement over baseline: -28.8%
+Model beats baseline: False
+Selected method for production: Seasonal-Naive Baseline
+
+Finding: the global gradient-boosting model did not beat the seasonal-naive baseline on this backtest. The baseline is used for the forecast_output.csv rather than reporting a fabricated improvement.

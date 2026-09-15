@@ -1,0 +1,45 @@
+{
+  "sales_daily": {
+    "rows": 36550,
+    "unique_sku": 50,
+    "date_range": "2024-01-01 to 2025-12-31",
+    "unparseable_dates": 0,
+    "negative_numeric_values": 0,
+    "duplicate_date_sku_rows": 0,
+    "nulls_after_cleaning": 0
+  },
+  "sku_master": {
+    "rows": 50,
+    "unique_sku": 50,
+    "duplicate_sku_rows": 0,
+    "skus_with_negative_gross_margin": 16
+  },
+  "calendar": {
+    "rows": 731,
+    "date_range": "2024-01-01 to 2025-12-31",
+    "duplicate_dates": 0,
+    "missing_calendar_days_in_range": 0
+  },
+  "inventory_snapshots": {
+    "rows": 4800,
+    "unique_sku": 200,
+    "snapshot_date_range": "2024-01-01 to 2025-12-01",
+    "duplicate_snapshot_sku_rows": 0,
+    "negative_numeric_values": 0
+  },
+  "sku_relationship_check": {
+    "sales_sku_count": 50,
+    "sku_master_count": 50,
+    "inventory_sku_count": 200,
+    "inventory_skus_not_in_master_count": 150,
+    "finding": "Inventory tracks 200 SKUs but sales/sku_master only cover SKU001-SKU050. The extra 150 inventory-only SKUs are retained in the cleaned inventory file but EXCLUDED from the modeling dataset (no sales/master data available for them).",
+    "valid_skus_for_modeling_count": 50
+  },
+  "modeling_dataset": {
+    "rows_missing_inventory_snapshot_for_month": 0,
+    "rows": 36550,
+    "columns": 29,
+    "sku_count": 50,
+    "date_range": "2024-01-01 to 2025-12-31"
+  }
+}

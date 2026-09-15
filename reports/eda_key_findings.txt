@@ -1,0 +1,19 @@
+FORESIGHT — EDA KEY FINDINGS
+========================================
+
+1. Home Decor is the strongest category by revenue (Rs 888,468,078), while Lighting is the weakest (Rs 458,736,187).
+
+2. Revenue is concentrated: just 24 of 50 SKUs (~48%) account for roughly 80% of total revenue.
+
+3. March 2024 was the peak demand month (26,791 units); Winter is the strongest season overall.
+
+4. On days flagged as promotions, average units sold per SKU-day were +38.1% versus non-promotion days — a notable observed difference, though not proof of causation.
+
+5. 16 of 50 SKUs (32%) currently have a negative gross margin per unit — these are losing money on every sale.
+
+6. Total units sold and gross margin per unit have a correlation of 0.14 across SKUs, showing high sales volume does not reliably mean high profitability.
+
+7. 13 SKUs show 34+ days of stock on hand relative to their demand in the latest snapshot — capital tied up in slow-moving inventory.
+
+8. Demand volatility (coefficient of variation) ranges from 0.25 to 0.65 across SKUs, meaning a one-size-fits-all forecasting approach will not suit every product equally well.
+

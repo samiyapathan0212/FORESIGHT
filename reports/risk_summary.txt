@@ -1,0 +1,18 @@
+FORESIGHT — INVENTORY RISK SUMMARY
+========================================
+
+Latest inventory snapshot used: 2025-12-01
+Forecast used: production forecast (selected seasonal-naive baseline)
+Overstock multiplier (business rule, configurable): 2.0
+
+SKU counts by action:
+  REORDER NOW: 8
+  WATCH / VOLATILE: 0
+  MARKDOWN / CLEAR: 2
+  HEALTHY: 40
+
+Total estimated sales at risk (stockouts): Rs 6,524,173
+Total estimated capital locked (overstock): Rs 2,111,118
+Total estimated rupee impact: Rs 8,635,291
+
+Note: these are estimated exposure figures based on documented business-rule assumptions (see OVERSTOCK_MULTIPLIER and the lead-time/safety-stock logic in src/risk.py), not confirmed financial losses.
