@@ -6,6 +6,7 @@
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.8-F7931E?logo=scikitlearn&logoColor=white)
 ![Plotly](https://img.shields.io/badge/Plotly-5.x-3F4F75?logo=plotly&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.6x-FF4B4B?logo=streamlit&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.14x-009688?logo=fastapi&logoColor=white)
 ![Jupyter](https://img.shields.io/badge/Jupyter-Notebooks-F37626?logo=jupyter&logoColor=white)
 
 An end-to-end demand forecasting and inventory risk system that turns raw sales and stock data into prioritized reorder and markdown decisions, delivered through an interactive Streamlit dashboard.
@@ -318,6 +319,9 @@ ForeSight/
 │   ├── forecast_metrics.csv
 │   ├── risk_summary.txt
 │   └── risk_metrics.csv
+├── service/
+│   ├── main.py                             # FastAPI scoring service (D6)
+│   └── requirements.txt                    # API dependencies
 ├── src/
 │   ├── pipeline.py                         # Ingest, validate, clean, join
 │   └── risk.py                             # Stockout / overstock risk engine
@@ -335,6 +339,7 @@ ForeSight/
 | Machine learning | scikit-learn (`HistGradientBoostingRegressor`) |
 | Visualization | Plotly, matplotlib, seaborn |
 | Dashboard | Streamlit |
+| API | FastAPI, Uvicorn |
 | Exploration | Jupyter Notebooks |
 
 ---
@@ -384,6 +389,127 @@ jupyter notebook
 ```
 
 > The notebooks (`02_baseline.ipynb` → `03_model.ipynb`) regenerate `weekly_demand_panel.csv`, `forecast_output.csv` and the forecast reports. Run them in order if you want to rebuild the forecast from scratch; otherwise the committed outputs are sufficient for the dashboard.
+
+---
+
+## Scoring Service (API)
+
+A read-only FastAPI service (`service/main.py`) exposes the production forecast and risk assessment for any modeled SKU. It serves the generated artifacts — it does **not** recompute forecasting or risk logic, so API values always match `forecast_output.csv` and `risk_output.csv`.
+
+### Run locally
+
+```bat
+venv\Scripts\activate
+pip install -r service\requirements.txt
+uvicorn service.main:app --reload --port 8000
+```
+
+Interactive documentation: `http://localhost:8000/docs`
+
+### Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | Service status, SKU count, production model, data-source availability |
+| GET | `/score/{sku}` | Forecast and risk for a single SKU |
+| POST | `/score` | Forecast and risk for a batch of SKUs (1–200) |
+| GET | `/docs` | Swagger UI |
+
+SKU lookup is case-insensitive. An unknown SKU returns **404**; a malformed request body returns **422** with field-level detail.
+
+### `GET /health`
+
+```json
+{
+  "status": "ok",
+  "scored_skus": 50,
+  "forecast_horizon_weeks": 6,
+  "production_model": "Seasonal-Naive Baseline",
+  "data_sources": {
+    "risk_output.csv": true,
+    "forecast_output.csv": true,
+    "forecast_metrics.csv": true
+  }
+}
+```
+
+### `GET /score/{sku}`
+
+Request:
+
+```bat
+curl http://localhost:8000/score/SKU012
+```
+
+Response (`200`):
+
+```json
+{
+  "SKU": "SKU012",
+  "Product_Name": "Product 012",
+  "Category": "Home Decor",
+  "forecast_horizon_weeks": 6,
+  "forecast_model": "Seasonal-Naive Baseline",
+  "forecast_demand_total": 1135.0,
+  "forecast_weekly": [
+    { "week": "2026-01-05", "predicted_demand": 180.0 },
+    { "week": "2026-01-12", "predicted_demand": 194.0 },
+    { "week": "2026-01-19", "predicted_demand": 191.0 },
+    { "week": "2026-01-26", "predicted_demand": 172.0 },
+    { "week": "2026-02-02", "predicted_demand": 195.0 },
+    { "week": "2026-02-09", "predicted_demand": 203.0 }
+  ],
+  "stockout_risk": true,
+  "overstock_risk": false,
+  "risk_action": "REORDER NOW",
+  "sales_at_risk_rs": 2484561.71,
+  "capital_locked_rs": 0.0,
+  "total_rupee_impact_rs": 2484561.71,
+  "priority_score": 17.647058823529413
+}
+```
+
+Unknown SKU (`404`):
+
+```json
+{
+  "detail": "SKU 'SKU999' not found. Only the 50 modeled SKUs (with both sales and product-master history) can be scored."
+}
+```
+
+### `POST /score`
+
+Request:
+
+```bat
+curl -X POST http://localhost:8000/score -H "Content-Type: application/json" -d "{\"skus\":[\"SKU012\",\"SKU025\",\"SKU999\"]}"
+```
+
+Response (`200`) — unknown SKUs are reported rather than failing the batch:
+
+```json
+{
+  "requested": 3,
+  "found": 2,
+  "not_found": ["SKU999"],
+  "results": [
+    { "SKU": "SKU012", "risk_action": "REORDER NOW", "forecast_demand_total": 1135.0, "...": "..." },
+    { "SKU": "SKU025", "risk_action": "MARKDOWN / CLEAR", "forecast_demand_total": 115.0, "...": "..." }
+  ]
+}
+```
+
+Malformed body (`422`):
+
+```json
+{
+  "detail": [
+    { "type": "missing", "loc": ["body", "skus"], "msg": "Field required", "input": { "bad": 1 } }
+  ]
+}
+```
+
+> Only the 50 modeled SKUs are scoreable. The 150 inventory-only SKUs have no sales or product-master history and are intentionally excluded, consistent with the pipeline's documented data-quality finding.
 
 ---
 

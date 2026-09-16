@@ -19,12 +19,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-# Scoring service client (isolated HTTP helper layer — see app/scoring_client.py)
-try:
-    from scoring_client import apply_score_to_row, get_health, score_sku
-except ImportError:  # when run as a module from the project root
-    from app.scoring_client import apply_score_to_row, get_health, score_sku
-
 # ---------------------------------------------------------------------------
 # Paths & constants
 # ---------------------------------------------------------------------------
@@ -489,39 +483,6 @@ def model_comparison_cards(baseline_wape, ml_wape):
                 unsafe_allow_html=True)
 
 
-@st.cache_data(ttl=60, show_spinner=False)
-def service_health() -> dict | None:
-    """Cached /health probe so each rerun does not re-hit the service."""
-    return get_health()
-
-
-@st.cache_data(ttl=60, show_spinner=False)
-def service_score(sku: str) -> dict | None:
-    """Cached GET /score/{sku}. Returns None when the service is unavailable."""
-    return score_sku(sku)
-
-
-def resolve_sku_row(sku: str):
-    """Return (row, source) for a SKU.
-
-    Scoring fields come from the service when it is reachable; inventory-position
-    fields always come from the local artifact. Falls back to the artifact row
-    entirely when the service is unavailable, so values never disappear.
-    """
-    row = risk_df[risk_df["SKU"] == sku].iloc[0]
-    payload = service_score(sku)
-    if payload is None:
-        return row, "artifact"
-    return apply_score_to_row(row, payload), "service"
-
-
-def data_source_note(source: str):
-    if source == "service":
-        st.caption("Scoring served live by the FORESIGHT scoring service.")
-    else:
-        st.caption("Scoring service unavailable — showing values from the local processed outputs.")
-
-
 def get_latest_snapshot_date() -> str:
     """Derive the latest inventory snapshot date from the risk summary report
     (falls back to the year/month columns in the inventory summary CSV)."""
@@ -594,16 +555,6 @@ if baseline_wape is not None:
     st.sidebar.markdown(f'<span class="badge badge-model">WAPE: {baseline_wape*100:.2f}%</span>', unsafe_allow_html=True)
 st.sidebar.markdown(f'<span class="badge badge-date">Latest inventory snapshot: {latest_snapshot_date}</span>',
                      unsafe_allow_html=True)
-
-_health = service_health()
-if _health:
-    st.sidebar.markdown(
-        f'<span class="badge" style="background:rgba(34,197,94,0.15);color:#86EFAC;">'
-        f'Scoring API: online ({_health.get("scored_skus", "—")} SKUs)</span>', unsafe_allow_html=True)
-else:
-    st.sidebar.markdown(
-        '<span class="badge" style="background:rgba(139,147,173,0.15);color:#8B93AD;">'
-        'Scoring API: offline — using local outputs</span>', unsafe_allow_html=True)
 
 
 # ===========================================================================
@@ -966,10 +917,9 @@ def page_risk_dashboard():
     section("SKU Drilldown")
     drill_options = sorted(filtered["SKU"].unique()) if not filtered.empty else sorted(risk_df["SKU"].unique())
     sel_drill = st.selectbox("Select a SKU to inspect", drill_options, key="rd_drill")
-    row, source = resolve_sku_row(sel_drill)
+    row = risk_df[risk_df["SKU"] == sel_drill].iloc[0]
     status_banner(row["risk_action"])
     render_sku_drilldown(row)
-    data_source_note(source)
 
 
 def render_sku_drilldown(row: pd.Series):
@@ -1030,7 +980,7 @@ def page_product_details():
     sel_sku = st.selectbox("Select a SKU", sku_list, index=sku_list.index(default_sku), key="pd_sku")
 
     sp = sku_perf[sku_perf["SKU"] == sel_sku].iloc[0]
-    r, score_source = resolve_sku_row(sel_sku)
+    r = risk_df[risk_df["SKU"] == sel_sku].iloc[0]
     fc = forecast_df[forecast_df["SKU"] == sel_sku]
     m = modeling_df[modeling_df["SKU"] == sel_sku]
 
@@ -1087,7 +1037,6 @@ def page_product_details():
 
     st.markdown(f'<div class="why-box"><span class="why-label">Why This Product Is Flagged</span>'
                 f'{why_flagged_text(r)}</div>', unsafe_allow_html=True)
-    data_source_note(score_source)
 
     section("Actual vs Forecast")
     st.plotly_chart(actual_vs_forecast_chart(sel_sku), use_container_width=True)
