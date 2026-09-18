@@ -23,7 +23,7 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-DEFAULT_BASE_URL = "http://localhost:8000"
+DEFAULT_BASE_URL = "https://foresight-scoring-api-a1w2.onrender.com"
 DEFAULT_TIMEOUT = 2.0  # seconds — keep the UI responsive if the API is down
 
 # Scoring fields the service is authoritative for. Inventory-position fields
