@@ -24,7 +24,7 @@ import urllib.request
 from typing import Any
 
 DEFAULT_BASE_URL = "https://foresight-scoring-api-a1w2.onrender.com"
-DEFAULT_TIMEOUT = 2.0  # seconds — keep the UI responsive if the API is down
+DEFAULT_TIMEOUT = 30.0  # seconds — keep the UI responsive if the API is down
 
 # Scoring fields the service is authoritative for. Inventory-position fields
 # (Current_Stock, Safety_Stock, ...) are not returned by the API and continue
