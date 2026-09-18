@@ -1,3 +1,4 @@
+.kilo/
 venv/
 __pycache__/
 *.pyc
